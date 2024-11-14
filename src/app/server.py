@@ -3,7 +3,7 @@ from fastapi.responses import RedirectResponse
 
 from langserve import add_routes
 
-from app.agent.doc_rag import DOC_RAG
+from app.agent.doc_agent import DOC_RAG_AGENT
 
 app = FastAPI()
 
@@ -17,8 +17,8 @@ async def redirect_root_to_docs():
 # add_routes(app, NotImplemented)
 add_routes(
     app,
-    DOC_RAG,
-    path="/runnable",
+    DOC_RAG_AGENT,
+    path="/doc_rag_agent",
 )
 
 
