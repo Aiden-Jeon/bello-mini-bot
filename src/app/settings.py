@@ -6,7 +6,7 @@ from pydantic_settings import BaseSettings
 
 
 class PathSettings(BaseSettings):
-    DATASET_PATH: str
+    VECTOR_DB_ARTIFACT_PATH: str
 
 
 class LiteLLMSettings(BaseSettings):

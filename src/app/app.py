@@ -1,13 +1,37 @@
-import streamlit as st
+from pathlib import Path
 
-from agent.doc_agent import DOC_RAG_CHAIN
+import streamlit as st
+from langchain_chroma import Chroma
+
+from agent.doc_agent import DocAgent
+from settings import settings
+from embedding import EMBEDDING_MODEL
 
 st.title("🦜🔗 Langchain Quickstart App")
+
+@st.cache_resource
+def load_vector_db():
+    DB_PATH = Path(__file__).parents[2] / settings.VECTOR_DB_ARTIFACT_PATH
+    db = Chroma(
+        persist_directory=str(DB_PATH),
+        embedding_function=EMBEDDING_MODEL,
+        collection_name="my_db",
+    )
+    if len(db.get(limit=1)) > 1:
+        print("successfully vector db has been loaded.")
+    else:
+        raise ValueError("vector db is not loaded properly.")
+    return db
+
+
+db = load_vector_db()
+retriever = db.as_retriever()
+doc_agent = DocAgent(retriever)
 
 with st.form("from"):
     user_input = st.text_area(
         "Enter text:",
-        "Which panel has the highest average temperature among all panels?",
+        "What is this document is about?",
     )
     submitted = st.form_submit_button("Submit")
 
@@ -27,11 +51,4 @@ if submitted:
 
     answer_container = output_container.chat_message("assistant", avatar="🦜")
 
-    # get data from vector database
-    extracted_data = sql_agent.invoke(user_input, answer_container)
-    # generate answer from rag
-    explain_stream = DOC_RAG_CHAIN.stream(
-        {"table": extracted_data, "question": user_input}
-    )
-
-    answer_container.write_stream(preprocess(explain_stream))
+    doc_agent.stream(user_input, answer_container)

@@ -141,7 +141,8 @@ class LLMThought:
 
     def on_llm_new_token(self, token: str, **kwargs: Any) -> None:
         # This is only called when the LLM is initialized with `streaming=True`
-        self._llm_token_stream += _convert_newlines(token)
+        # self._llm_token_stream += _convert_newlines(token)
+        self._llm_token_stream += token.page_content
         self._llm_token_writer_idx = self._container.markdown(
             self._llm_token_stream, index=self._llm_token_writer_idx
         )
@@ -199,10 +200,10 @@ class LLMThought:
         """Remove the thought from the screen. A cleared thought can't be reused."""
         self._container.clear()
 
-    def run(self, text):
-        for token in list(text):
-            self.on_llm_new_token(token)
-            time.sleep(0.001)
-        self.on_llm_end()
+    def search(self, doc):
+        self.on_tool_start("Finding from vector database", "ChromaDB")
+        # self.on_tool_end(doc)
+        self._container.markdown(doc.page_content)
+        self._container.markdown(doc.metadata)
         self._state = LLMThoughtState.COMPLETE
-        # self.on_tool_end()
+        self.complete("Completed")
