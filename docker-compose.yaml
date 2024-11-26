@@ -1,0 +1,39 @@
+services:
+  db:
+    image: postgres:latest
+    container_name: postgres_db
+    environment:
+      POSTGRES_DB: litellm_db
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password  # Change to a strong password
+    volumes:
+      - pg_data:/var/lib/postgresql/data  # Persist data
+    ports:
+      - "5432:5432"  # Expose PostgreSQL port
+    networks:
+      - litellm_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d litellm_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  litellm:
+    image: ghcr.io/berriai/litellm:main-latest
+    container_name: litellm
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "4000:4000"  # Expose port (change if your service uses a different port)
+    volumes:
+      - ./docker/litellm/config.yaml:/app/config.yaml  # Attach the local config.yaml file to the container
+    command: ["--config", "/app/config.yaml"]
+    networks:
+      - litellm_network
+
+networks:
+  litellm_network:
+    driver: bridge
+
+volumes:
+  pg_data:

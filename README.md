@@ -1,79 +1,48 @@
-# src
+# bello-mini-bot
 
 ## Installation
 
-Install the LangChain CLI if you haven't yet
+### Poetry
 
-```bash
-pip install -U langchain-cli
+Install packages with poetry.
+
+```python
+poetry install
 ```
 
-## Adding packages
+### Litellm Proxy
 
-```bash
-# adding packages from 
-# https://github.com/langchain-ai/langchain/tree/master/templates
-langchain app add $PROJECT_NAME
+1. copy `config_template.yaml` file and write the desired keys
 
-# adding custom GitHub repo packages
-langchain app add --repo $OWNER/$REPO
-# or with whole git string (supports other git providers):
-# langchain app add git+https://github.com/hwchase17/chain-of-verification
+    ```bash
+    cp docker/litellm/config_template.yaml docker/litellm/config.yaml
+    ```
 
-# with a custom api mount point (defaults to `/{package_name}`)
-langchain app add $PROJECT_NAME --api_path=/my/custom/path/rag
-```
+    Support keys are below:
 
-Note: you remove packages by their api path
+    - huggignface : [Link](https://huggingface.co/settings/tokens)
+    - openai: [Link](https://platform.openai.com/settings/organization/api-keys)
 
-```bash
-langchain app remove my/custom/path/rag
-```
+2. run litellm server with docker compose.
 
-## Setup LangSmith (Optional)
-LangSmith will help us trace, monitor and debug LangChain applications. 
-You can sign up for LangSmith [here](https://smith.langchain.com/). 
-If you don't have access, you can skip this section
+    ```bash
+    docker compose up -d
+    ```
 
+3. check the litellm server. If key are not provided it will not work.
+    ```bash
+    make test-litellm
+    ```
 
-```shell
-export LANGCHAIN_TRACING_V2=true
-export LANGCHAIN_API_KEY=<your-api-key>
-export LANGCHAIN_PROJECT=<your-project>  # if not specified, defaults to "default"
-```
+### Usage
 
-## Launch LangServe
+Using litellm's api base server `http://0.0.0.0:4000`, openai_api_key must be `sk-1234`.
+This is key that is written on `docker/litellm/config.yaml`.
 
-```bash
-langchain serve
-```
-
-## Running in Docker
-
-This project folder includes a Dockerfile that allows you to easily build and host your LangServe app.
-
-### Building the Image
-
-To build the image, you simply:
-
-```shell
-docker build . -t my-langserve-app
-```
-
-If you tag your image with something other than `my-langserve-app`,
-note it for use in the next step.
-
-### Running the Image Locally
-
-To run the image, you'll need to include any environment variables
-necessary for your application.
-
-In the below example, we inject the `OPENAI_API_KEY` environment
-variable with the value set in my local environment
-(`$OPENAI_API_KEY`)
-
-We also expose port 8080 with the `-p 8080:8080` option.
-
-```shell
-docker run -e OPENAI_API_KEY=$OPENAI_API_KEY -p 8080:8080 my-langserve-app
+```python
+ChatOpenAI(
+        openai_api_base="http://0.0.0.0:4000",
+        model="openai/gpt-3.5-turbo",
+        openai_api_key="sk-1234",
+    )
 ```

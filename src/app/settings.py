@@ -6,11 +6,14 @@ from pydantic_settings import BaseSettings
 
 
 class PathSettings(BaseSettings):
-    VECTOR_DB_ARTIFACT_PATH: str
+    DATASET_PATH: str
 
 
-class OpenAISettings(BaseSettings):
+class LiteLLMSettings(BaseSettings):
+    OPENAI_API_BASE: str
     OPENAI_API_KEY: str
+    MODEL: str
+    MAX_TOKENS: str
 
 
 class LangChainSettings(BaseSettings):
@@ -20,6 +23,7 @@ class LangChainSettings(BaseSettings):
 
 class Settings(
     PathSettings,
+    LiteLLMSettings,
     LangChainSettings,
 ):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
